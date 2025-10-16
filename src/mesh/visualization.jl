@@ -127,8 +127,14 @@ function MeshData_to_vtk(md::MeshData, rd::RefElemData, data, dataname, filename
     cells = [MeshCell(vtk_cell_type, perm .+ ((i-1) * num_lagrange_points)) for i in 1:md.num_elements]
 
     if equi_dist_nodes == true
-        interpolate = vandermonde(rd.element_type, rd.N, equi_nodes(rd.element_type, rd.N)...) / rd.VDM
+        # interpolate = vandermonde(rd.element_type, rd.N, equi_nodes(rd.element_type, rd.N)...) / rd.VDM
+        interpolate = rd.Vp
         coords = map(x -> vec(interpolate * x), md.xyz)
+        data_interpolated = Vector{Matrix{eltype(data[1])}}(undef, length(data))
+        for (i, data_i) in enumerate(data)
+            data_interpolated[i] = interpolate * data_i
+        end
+        data = data_interpolated
     else # don't interpolate
         coords = vec.(md.xyz) 
     end   

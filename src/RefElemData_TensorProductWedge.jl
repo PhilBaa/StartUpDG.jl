@@ -76,7 +76,7 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
     ntJ = [zq; zq; zq; -et; et] 
     
     # Create face interpolation matrix
-    vandermonde_tensor_wedge = zeros(length(rf), length(r))
+    vandermonde_tensor_wedge = zeros(length(rf), size(VDM, 2))
     V_tri, _, _ = basis(tri.element_type, tri.N, rf, sf)
     V_line, _ = basis(line.element_type, line.N, tf)
     id = 1
@@ -97,7 +97,9 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
 
     # `line.Vq` is a `UniformScaling` type for `RefElemData` built 
     # from SummationByPartsOperators.jl
-    Vq = line.Vq isa UniformScaling ? kron(I(num_line_nodes), tri.Vq) : kron(line.Vq, tri.Vq)
+    Vq = kron(line.Vq isa UniformScaling ? I(num_line_nodes) : line.Vq,
+                  tri.Vq isa UniformScaling ? I(num_tri_face_nodes) : tri.Vq)
+                  
     M  = Vq' * diagm(wq) * Vq
     Pq = M \ (Vq' * diagm(wq))
     LIFT = M \ (Vf' * diagm(wf))
