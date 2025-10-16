@@ -28,7 +28,7 @@ Constructor for `RefElemData` for different element types.
 """
 function RefElemData(elem::Line, 
                      approx_type::Polynomial{MultidimensionalQuadrature},
-                     N; quad_rule_vol=quad_nodes(elem, N+1), Nplot=10)
+                     N; quad_rule_vol=quad_nodes(elem, N+1), Nplot=N)
 
     fv = face_vertices(elem)
 
@@ -68,7 +68,7 @@ function RefElemData(elem::Union{Tri, Quad},
                      approx_type::Polynomial{MultidimensionalQuadrature}, N;
                      quad_rule_vol=quad_nodes(elem, N),
                      quad_rule_face=quad_nodes(face_type(elem), N),
-                     Nplot=10)
+                     Nplot=N)
 
     fv = face_vertices(elem) # set faces for triangle
 
@@ -111,7 +111,7 @@ function RefElemData(elem::Union{Tet, Hex},
                      approx_type::Polynomial{MultidimensionalQuadrature}, N;
                      quad_rule_vol=quad_nodes(elem, N),
                      quad_rule_face=quad_nodes(face_type(elem), N),
-                     Nplot=10)
+                     Nplot=N)
 
     if elem isa Hex && N > 4
         @warn "Since N > 4, we suggest using `RefElemData(Hex(), Polynomial(TensorProductQuadrature(gauss_quad(0, 0, $N+1))), $N)`, " * 
@@ -160,7 +160,7 @@ end
                 quad_rule_face_quad=quad_nodes(Quad(), N), 
                 quad_rule_face_tri=quad_nodes(Tri(), N), 
                 quad_rule_face=(quad_rule_face_quad, quad_rule_face_tri),
-                Nplot=10)
+                Nplot=N)
 
 Builds operators for prisms/wedges
 """
@@ -170,7 +170,7 @@ function RefElemData(elem::Wedge,
                      quad_rule_face_quad=quad_nodes(Quad(), N), 
                      quad_rule_face_tri=quad_nodes(Tri(), N), 
                      quad_rule_face=(quad_rule_face_quad, quad_rule_face_tri),
-                     Nplot=10)
+                     Nplot=N)
 
     #Find the vertices of the faces
     fv = face_vertices(elem)
@@ -239,7 +239,7 @@ end
                 quad_rule_face_quad=quad_nodes(Quad(), N), 
                 quad_rule_face_tri=quad_nodes(Tri(), N), 
                 quad_rule_face=(quad_rule_face_quad, quad_rule_face_tri),
-                Nplot=10)
+                Nplot=N)
 
 Builds operators for pyramids.
 """
@@ -249,7 +249,7 @@ function RefElemData(elem::Pyr,
                      quad_rule_face_quad=quad_nodes(Quad(), N), 
                      quad_rule_face_tri=quad_nodes(Tri(), N), 
                      quad_rule_face=(quad_rule_face_quad, quad_rule_face_tri),
-                     Nplot=10)
+                     Nplot=N)
 
     #Find the vertices of the faces
     fv = face_vertices(elem)
@@ -327,7 +327,7 @@ tensor product structure.
 function RefElemData(elem::Quad, 
                      approximation_type::Polynomial{<:TensorProductQuadrature}, N;
                      quad_rule_face = approximation_type.data.quad_rule_1D,
-                     Nplot = 10)
+                     Nplot = N)
 
     fv = face_vertices(elem) 
 
@@ -388,7 +388,7 @@ function RefElemData(elem::Hex,
                      quad_rule_face =
                         tensor_product_quadrature(face_type(elem), 
                                                   approximation_type.data.quad_rule_1D...),
-                     Nplot = 10)
+                     Nplot = N)
 
     fv = face_vertices(elem) 
 
@@ -451,7 +451,7 @@ function RefElemData(elem::Hex,
                        M, Pq, (Dr, Ds, Dt), LIFT)
 end
 
-RefElemData(elem::Hex, approximation_parameter::TensorProductQuadrature, N; Nplot = 10) = 
+RefElemData(elem::Hex, approximation_parameter::TensorProductQuadrature, N; Nplot = N) = 
     RefElemData(elem, Polynomial(approximation_parameter), N; Nplot)
 
     
