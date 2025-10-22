@@ -13,6 +13,10 @@ end
 # for clarity that we're taking a tensor product of nodes
 _wedge_tensor_product(line, tri) = vec.(meshgrid(line, tri))
 
+function Base.kron(A::UniformScaling, B::UniformScaling)
+    return UniformScaling(A.λ * B.λ)
+end
+
 function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs...)
 
     (; tri, line) = approximation_type
@@ -37,6 +41,7 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
     
     # assumes interpolation nodes contain face nodes
     Fmask = find_face_nodes(elem, r, s, t)
+    Fmask = vcat(Fmask...)
     
     # build face quadrature nodes
     rft, sft = map(x->reshape(x, :, 3), tri.rstf)
@@ -97,11 +102,12 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
 
     # `line.Vq` is a `UniformScaling` type for `RefElemData` built 
     # from SummationByPartsOperators.jl
-    Vq = kron(line.Vq isa UniformScaling ? I(num_line_nodes) : line.Vq,
-                  tri.Vq isa UniformScaling ? I(num_tri_face_nodes) : tri.Vq)
+    Vq = kron(line.Vq isa UniformScaling ? I : line.Vq,
+                  tri.Vq isa UniformScaling ? I : tri.Vq)
                   
     M  = Vq' * diagm(wq) * Vq
-    Pq = M \ (Vq' * diagm(wq))
+    Pq = tri.Pq isa UniformScaling && line.Pq isa UniformScaling ? 
+            I : M \ (Vq' * diagm(wq))
     LIFT = M \ (Vf' * diagm(wf))
 
     # tensor product plotting nodes
