@@ -39,10 +39,6 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
     Dt  = kron(line.Dr, I(tri.Np))
     Drst = (Dr, Ds, Dt)
     
-    # assumes interpolation nodes contain face nodes
-    Fmask = find_face_nodes(elem, r, s, t)
-    Fmask = vcat(Fmask...)
-    
     # build face quadrature nodes
     rft, sft = map(x->reshape(x, :, 3), tri.rstf)
     tf1, rf1 = vec.(meshgrid(line.rq, view(rft, :, 1)))
@@ -79,22 +75,10 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
     nrJ = [zq; eq; -eq; zt; zt]
     nsJ = [-eq; eq; zq; zt; zt]
     ntJ = [zq; zq; zq; -et; et] 
-    
-    # Create face interpolation matrix
-    vandermonde_tensor_wedge = zeros(length(rf), size(VDM, 2))
-    V_tri, _, _ = basis(tri.element_type, tri.N, rf, sf)
-    V_line, _ = basis(line.element_type, line.N, tf)
-    id = 1
-    for j in axes(V_line, 2)
-        for i in axes(V_tri, 2)
-            @. vandermonde_tensor_wedge[:, id] = V_tri[:, i] * V_line[:,j]
-            id += 1
-        end
-    end
 
-    Vf = vandermonde_tensor_wedge / VDM
+    # Create face interpolation matrix and Face node mask
+    Vf, Fmask = wedge_Vf_Fmask((r, s, t), (rf, sf, tf), VDM, line, tri)
 
-    # create tensor product quadrature rule
     tq, rq  = _wedge_tensor_product(line.rq, tri.rq)
     _,  sq  = _wedge_tensor_product(line.rq, tri.sq)
     wt, wrs = _wedge_tensor_product(line.wq, tri.wq)
@@ -128,3 +112,38 @@ end
 # TODO: add link to proof when we write it up
 inverse_trace_constant(rd::RefElemData{3, <:Wedge, <:TensorProductWedge}) = 
     inverse_trace_constant(rd.approximation_type.line) + inverse_trace_constant(rd.approximation_type.tri)
+
+function wedge_Vf_Fmask(rst, rstf, VDM, line::RefElemData{1, <:Line, <:Polynomial}, tri::RefElemData{2, <:Tri, <:Polynomial})
+    r, s, t = rst
+    (rf, sf, tf) = rstf
+
+    Fmask = find_face_nodes(Wedge(), r, s, t)
+    Fmask = vcat(Fmask...)
+
+    vandermonde_tensor_wedge = zeros(length(rf), size(VDM, 2))
+    V_tri, _, _ = basis(Tri(), tri.N, rf, sf)
+    V_line, _ = basis(Line(), line.N, tf)
+    id = 1
+    for j in axes(V_line, 2)
+        for i in axes(V_tri, 2)
+            @. vandermonde_tensor_wedge[:, id] = V_tri[:, i] * V_line[:,j]
+            id += 1
+        end
+    end
+
+    Vf = vandermonde_tensor_wedge / VDM
+    return Vf, Fmask
+end
+
+function wedge_Vf_Fmask(rst, rstf, VDM, line::RefElemData{1, <:Line, <:SBP}, tri::RefElemData{2, <:Tri, <:SBP}; tol = 100 * eps())
+    r, s, t = rst
+    (rf, sf, tf) = rstf
+    Vf = zeros(length(rf), length(r))
+    Fmask = zeros(Int, length(rf))
+    for i in eachindex(r)
+        id = findall(@. abs(r[i]-rf[:]) + abs(s[i]-sf[:]) + abs(t[i]-tf[:]) .< tol)
+        Fmask[id] .= i
+        Vf[id, i] .= 1
+    end
+    return Vf, Fmask
+end
