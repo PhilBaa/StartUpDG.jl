@@ -474,8 +474,7 @@ function SUD_to_vtk_order(rd::RefElemData{DIM}) where {DIM}
     # For tensor-product elements in which the polynomial degree is a tuple, we currently
     # only support elements with the same polynomial degree in all directions.
     if length(rd.N) > 1
-        @assert length(Set(rd.N)) == 1 "`order` must have equal elements."
-        order = first(rd.N)
+        order = maximum(rd.N)
     else
         order = rd.N
     end
