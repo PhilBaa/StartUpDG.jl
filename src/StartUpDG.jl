@@ -8,7 +8,7 @@ using FillArrays: Fill
 using HDF5: h5open # used to read in SBP triangular node data
 using Kronecker: kronecker # for Hex element matrix manipulations
 using LinearAlgebra:
-    cond, diagm, eigvals, Diagonal, UniformScaling, I, mul!, norm, qr, ColumnNorm, Symmetric, nullspace, pinv
+    cond, diagm, eigvals, Diagonal, UniformScaling, I, mul!, norm, cross, qr, ColumnNorm, Symmetric, nullspace, pinv
 using NodesAndModes: meshgrid, find_face_nodes, face_vertices
 @reexport using NodesAndModes # for basis functions
 using PathIntersections: PathIntersections

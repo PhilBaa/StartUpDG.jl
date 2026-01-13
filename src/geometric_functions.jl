@@ -63,16 +63,23 @@ function geometric_factors(x, y, z, Dr, Ds; Filters=(I, I, I))
     a1 = Dr * x, Dr * y, Dr * z
     a2 = Ds * x, Dr * y, Ds * z
     
-    a3 = @. a1[2] * a2[3] - a1[3] * a2[2], a1[3] * a2[1] - a1[1] * a2[3], a1[1] * a2[2] - a1[2] * a2[1]
-    norma3 = sqrt.(a3[1].^2 + a3[2].^2 + a3[3].^2)
-    a3 = @. a3[1] / norma3, a3[2] / norma3, a3[3] / norma3
+    a3 = @. a1[2] * a2[3] - a1[3] * a2[2],
+            a1[3] * a2[1] - a1[1] * a2[3], 
+            a1[1] * a2[2] - a1[2] * a2[1]
 
-    rxJ, ryJ, rzJ = @. a2[2] * a3[3] - a2[3] * a3[2], a2[3] * a3[1] - a2[1] * a3[3], a2[1] * a3[2] - a2[2] * a3[1]
-    sxJ, syJ, szJ = @. a3[2] * a1[3] - a3[3] * a1[2], a3[3] * a1[1] - a3[1] * a1[3], a3[1] * a1[2] - a3[2] * a1[1]
+    norm_a3 = sqrt.(a3[1].^2 + a3[2].^2 + a3[3].^2)
+
+    a3 = @. a3[1] / norm_a3, a3[2] / norm_a3, a3[3] / norm_a3
+
+    rxJ, ryJ, rzJ = @. a2[2] * a3[3] - a2[3] * a3[2], 
+                       a2[3] * a3[1] - a2[1] * a3[3], 
+                       a2[1] * a3[2] - a2[2] * a3[1]
+    sxJ, syJ, szJ = @. a3[2] * a1[3] - a3[3] * a1[2],
+                       a3[3] * a1[1] - a3[1] * a1[3],
+                       a3[1] * a1[2] - a3[2] * a1[1]
 
     J = @. sqrt((xr^2 + yr^2 + zr^2) * (xs^2 + ys^2 + zs^2) - (xr * xs + yr * ys + zr * zs)^2)
-
-    return rxJ .* 0, sxJ .* 0, ryJ .* 0, syJ, rzJ, szJ, J
+    return rxJ, sxJ, ryJ, syJ, rzJ, szJ, J
 end
 
 # physical outward normals are computed via Nanson's formula: G * nhatJ, where 
@@ -81,7 +88,6 @@ end
 function compute_normals(geo::SMatrix{Dim, DimAmbient}, Vf, nrstJ...) where {Dim, DimAmbient}
     nxyzJ = ntuple(x -> zeros(size(Vf, 1), size(first(geo), 2)), DimAmbient)
     for i = 1:Dim, j = 1:DimAmbient
-        @show geo[i, j]
         nxyzJ[i] .+= (Vf * geo[i,j]) .* nrstJ[j]
     end
     Jf = sqrt.(sum(map(x -> x.^2, nxyzJ)))
