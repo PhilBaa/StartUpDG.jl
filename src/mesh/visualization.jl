@@ -128,8 +128,6 @@ function MeshData_to_vtk(md::MeshData, rd::RefElemData, data, dataname, filename
 
     if equi_dist_nodes == true
         coords = map(x -> vec(rd.Vp * x), md.xyz)
-        norms = sqrt.(coords[1].^2 .+ coords[2].^2 .+ coords[3].^2)
-        coords = map(c -> c ./ norms, coords) 
         data_interpolated = Vector{Matrix{eltype(eltype(data))}}(undef, length(data))
         for (i, data_i) in enumerate(data)
             data_interpolated[i] = rd.Vp * data_i

@@ -406,11 +406,7 @@ function MeshData(VX, VY, VZ, EToV, rd::RefElemData{2}; is_periodic=(false, fals
     (; Dr, Ds) = rd
     rxJ, sxJ, ryJ, syJ, rzJ, szJ, J = geometric_factors(x, y, z, Dr, Ds)
     rstxyzJ = SMatrix{2, 3}(rxJ, ryJ, rzJ, sxJ, syJ, szJ)
-    @show size(rd.nrstJ[1])
-    @show rd.nrstJ[1]
     nrstJ = (rd.nrstJ..., zeros(size(rd.nrstJ[1])))
-    @show (rd.nrstJ..., zeros(size(rd.nrstJ[1])))
-    @show rd.nrstJ
     (; Vq, wq ) = rd
     xq, yq, zq = (x -> Vq * x).((x, y, z))
     wJq = diagm(wq) * (Vq * J)
