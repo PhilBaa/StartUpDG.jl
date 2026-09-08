@@ -224,7 +224,7 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
         Vf_tri, _, _ = basis(tri.element_type, tri.N, rf, sf)
         Vf_tri = Vf_tri / tri.VDM
     elseif tri.approximation_type isa SBP
-        tri_Vq = tri.Vq isa UniformScaling ? I(num_tri_nodes) : tri.Vq
+        tri_Vq = tri.Vq isa UniformScaling ? I(num_tri_face_nodes) : tri.Vq
         
         # the rows of tri.Vf are ordered by nodes, then by faces. we construct the 
         # interpolation operator to quadrilateral faces by extracting rows corresponding 
@@ -288,7 +288,7 @@ function RefElemData(elem::Wedge, approximation_type::TensorProductWedge; kwargs
         Vq = I
     else
         Vq = kron(line.Vq isa UniformScaling ? I(num_line_nodes) : line.Vq,
-                  tri.Vq isa UniformScaling ? I(num_tri_nodes) : tri.Vq)
+                  tri.Vq isa UniformScaling ? I(num_tri_face_nodes) : tri.Vq)
     end
     M  = Vq' * diagm(wq) * Vq
     Pq = tri.Pq isa UniformScaling && line.Pq isa UniformScaling ? 
